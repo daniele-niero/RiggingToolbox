@@ -1,0 +1,82 @@
+require Math;
+
+object Kine {
+    Xfo local;
+    Xfo global;
+    Kine parentKine;
+    Boolean globalClean;
+};
+
+/// getGlobal is read-write because it has to change this.globalClean value.
+inline Xfo Kine.getGlobal!(){
+
+    if(!this.globalClean){
+        if(this.parentKine){
+            this.global = this.parentKine.getGlobal() * this.local; 
+        }
+        else{
+           this.global = this.local; 
+        }
+        this.globalClean = true;
+    }
+    return this.global;
+}
+
+inline Xfo Kine.getLocal(){
+    return this.local;
+}
+
+inline Kine Kine.getParent(){
+    return this.parentKine;
+}
+
+inline Boolean Kine.isClean(){
+    return this.globalClean;
+}
+
+inline Kine.setParent!(Kine parent){
+    Xfo thisGlobal = this.getGlobal();
+    this.parentKine = parent;
+    this.setGlobal(thisGlobal);
+    // this.globalClean = false;
+}
+
+inline Kine.setLocal!(Xfo localXfo){
+    this.local = localXfo;
+    this.globalClean = false;
+}
+
+inline Kine.setGlobal!(Xfo globalXfo){
+    if(this.parentKine){
+        this.local = this.parentKine.getGlobal().inverse() * globalXfo; 
+    }
+    else{
+       this.local = globalXfo; 
+    }
+    this.globalClean = false;
+}
+
+
+
+operator entry()
+{
+    Kine kine1();
+    Kine kine2();
+    kine2.setParent(kine1);
+
+    Xfo kine1Local = kine1.getLocal();
+    kine1Local.tr.x = 10; 
+    kine1.setLocal(kine1Local);
+
+
+
+    report("local  "+kine2.getLocal());
+    report("global "+kine2.getGlobal());
+
+    Xfo newGlobal = kine2.getGlobal();
+    newGlobal.tr.y = 10;
+    kine2.setGlobal(newGlobal);
+
+    report("local  "+kine2.getLocal());
+    report("global "+kine2.getGlobal());
+}
