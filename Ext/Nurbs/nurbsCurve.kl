@@ -1,0 +1,63 @@
+require Math;
+
+object NurbsCurve {
+    Vec3 cvs[];
+    Scalar knots[];
+    Integer degree;
+    Boolean close;
+
+    /// internal
+    Boolean normalized;
+};
+
+function NurbsCurve() {
+    this.cvs.resize(4);
+    this.cvs[1].x = 1.0;
+    this.cvs[2].x = 2.0;
+    this.cvs[3].x = 3.0;
+    this.degree = 3;
+    this.close = false;
+    this.normalized = true;
+    this.computeKnotVector();
+}
+
+function NurbsCurve.normalize!() {
+
+}
+
+function NurbsCurve.computeKnotVector!() {
+    Size cvCount = this.cvs.size();
+    
+    if (this.close==true) {
+        Size knotsCount = this.degree*2+cvCount+1;
+        this.knots.resize(knotsCount);
+        for (Size i=0; i<knotsCount; i++) {
+            this.knots[i] = i-this.degree;
+        }
+    }
+    else {
+        Size knotsCount = this.degree+cvCount+1;
+        this.knots.resize(knotsCount);
+        for (Size i=0; i<knotsCount; i++) {
+            this.knots[i] += Math_max(0, i-this.degree); 
+        }
+    }
+
+    if (this.normalized==true) {
+        this.normalize();
+    }
+}
+
+function NurbsCurve.setCvs!(Vec3 cvs[]) {
+    this.cvs = cvs;
+    this.computeKnotVector();
+}
+
+
+
+
+operator entry() {
+    NurbsCurve curve = NurbsCurve();
+    report(curve.cvs);
+    report(curve.knots);
+}
